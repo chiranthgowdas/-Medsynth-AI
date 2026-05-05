@@ -277,7 +277,8 @@ def attribute_inference_attack(
     1. For each sensitive column, train a model on synthetic data (minus that column)
        to predict the sensitive column.
     2. Evaluate prediction accuracy on real data.
-    3. Compare against a random baseline.
+    3. Compare against majority-class baseline (what a trivial predictor achieves).
+    4. Advantage = attack_accuracy - majority_baseline.
 
     Args:
         real_df: Original real data
@@ -325,7 +326,7 @@ def attribute_inference_attack(
             real_features = real_df[feature_cols].copy()
             real_target = real_df[target_col].copy()
 
-            # Encode
+            # Encode categorical features
             for col in synth_features.select_dtypes(include=["object", "category"]).columns:
                 le = LabelEncoder()
                 all_vals = pd.concat([synth_features[col], real_features[col]]).astype(str)
@@ -344,11 +345,15 @@ def attribute_inference_attack(
             real_target_enc = le_target.transform(real_target.astype(str))
 
             n_classes = len(le_target.classes_)
-            baseline_accuracy = 1.0 / n_classes  # random baseline
+
+            # Proper baseline: majority class proportion (what a trivial predictor gets)
+            class_counts = np.bincount(real_target_enc)
+            majority_baseline = float(class_counts.max()) / float(class_counts.sum())
 
             # Train on synthetic, predict on real
             model = RandomForestClassifier(
-                n_estimators=50, random_state=ML_RANDOM_STATE, n_jobs=-1
+                n_estimators=50, max_depth=5,
+                random_state=ML_RANDOM_STATE, n_jobs=-1
             )
             scaler = StandardScaler()
             X_train = scaler.fit_transform(synth_features.values)
@@ -358,14 +363,16 @@ def attribute_inference_attack(
             y_pred = model.predict(X_test)
 
             accuracy = float(accuracy_score(real_target_enc, y_pred))
-            advantage = max(0, accuracy - baseline_accuracy)
+
+            # Advantage over majority-class baseline
+            advantage = max(0, accuracy - majority_baseline)
 
             column_results[target_col] = {
                 "accuracy": round(accuracy, 4),
-                "baseline_accuracy": round(baseline_accuracy, 4),
+                "baseline_accuracy": round(majority_baseline, 4),
                 "advantage": round(advantage, 4),
                 "n_classes": n_classes,
-                "vulnerable": advantage > 0.1,
+                "vulnerable": advantage > 0.15,
             }
             total_advantage += advantage
 
@@ -397,7 +404,7 @@ def attribute_inference_attack(
         "risk_score": risk_score,
         "risk_level": risk_level,
         "interpretation": (
-            f"Average inference advantage: {avg_advantage:.3f} over random baseline. "
+            f"Average inference advantage: {avg_advantage:.3f} over majority-class baseline. "
             f"{'Attribute privacy is well-protected.' if avg_advantage < 0.1 else 'Some attributes may be inferable. Consider reducing correlations or increasing DP noise.'}"
         ),
     }

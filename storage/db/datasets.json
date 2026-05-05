@@ -595,5 +595,42 @@
     },
     "fingerprint": "fc7ab44f9e3a75509b9da82e14ea96d1d8c68cbb4155d165688bcb435c33afbf",
     "created_at": "2026-05-05T06:14:24.090426+00:00"
+  },
+  "ds_31816ef47e663ada": {
+    "id": "ds_31816ef47e663ada",
+    "filename": "healthcare_data.csv",
+    "filepath": "C:\\Users\\chira\\.gemini\\antigravity\\scratch\\synth-health-guard\\storage\\uploads\\ds_31816ef47e663ada_healthcare_data.csv",
+    "num_rows": 1000,
+    "num_cols": 12,
+    "columns": [
+      "age",
+      "gender",
+      "blood_pressure_systolic",
+      "blood_pressure_diastolic",
+      "cholesterol",
+      "bmi",
+      "glucose",
+      "heart_rate",
+      "smoking_status",
+      "diabetes",
+      "hypertension",
+      "heart_disease"
+    ],
+    "column_types": {
+      "age": "numerical",
+      "gender": "categorical",
+      "blood_pressure_systolic": "numerical",
+      "blood_pressure_diastolic": "numerical",
+      "cholesterol": "numerical",
+      "bmi": "numerical",
+      "glucose": "numerical",
+      "heart_rate": "numerical",
+      "smoking_status": "categorical",
+      "diabetes": "boolean",
+      "hypertension": "boolean",
+      "heart_disease": "boolean"
+    },
+    "fingerprint": "70e5e2abf0a39009cd6758d359e52f5bd05175136d972dd15c1bf7dc4fe1df7c",
+    "created_at": "2026-05-05T06:54:40.054890+00:00"
   }
 }

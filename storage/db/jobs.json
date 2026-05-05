@@ -3242,5 +3242,219 @@
     "error": null,
     "created_at": "2026-05-05T06:14:49.910547+00:00",
     "completed_at": null
+  },
+  "job_06062bab5fd8406c": {
+    "id": "job_06062bab5fd8406c",
+    "dataset_id": "ds_31816ef47e663ada",
+    "type": "generation",
+    "params": {
+      "num_rows": 500,
+      "model_type": "statistical",
+      "epochs": 100,
+      "epsilon": 1.0,
+      "delta": 1e-05
+    },
+    "status": "completed",
+    "progress": 100,
+    "result": {
+      "job_id": "job_06062bab5fd8406c",
+      "dataset_id": "ds_31816ef47e663ada",
+      "model_type": "statistical",
+      "num_rows_generated": 500,
+      "num_columns": 12,
+      "columns": [
+        "age",
+        "gender",
+        "blood_pressure_systolic",
+        "blood_pressure_diastolic",
+        "cholesterol",
+        "bmi",
+        "glucose",
+        "heart_rate",
+        "smoking_status",
+        "diabetes",
+        "hypertension",
+        "heart_disease"
+      ],
+      "output_file": "C:\\Users\\chira\\.gemini\\antigravity\\scratch\\synth-health-guard\\storage\\generated\\ds_31816ef47e663ada_statistical_job_06062bab5fd8406c.csv",
+      "output_filename": "ds_31816ef47e663ada_statistical_job_06062bab5fd8406c.csv",
+      "training_time_seconds": 0.01,
+      "dp_applied": true,
+      "dp_metadata": {
+        "mechanism": "gaussian",
+        "epsilon_requested": 1.0,
+        "delta_requested": 1e-05,
+        "epsilon_actual": 3.348852,
+        "num_columns_protected": 12,
+        "column_details": {
+          "age": {
+            "type": "numeric",
+            "mechanism": "gaussian",
+            "sensitivity": "77",
+            "epsilon": 1.0
+          },
+          "gender": {
+            "type": "categorical",
+            "mechanism": "randomized_response",
+            "domain_size": 2,
+            "epsilon": 1.0
+          },
+          "blood_pressure_systolic": {
+            "type": "numeric",
+            "mechanism": "gaussian",
+            "sensitivity": "112",
+            "epsilon": 1.0
+          },
+          "blood_pressure_diastolic": {
+            "type": "numeric",
+            "mechanism": "gaussian",
+            "sensitivity": "79",
+            "epsilon": 1.0
+          },
+          "cholesterol": {
+            "type": "numeric",
+            "mechanism": "gaussian",
+            "sensitivity": "226",
+            "epsilon": 1.0
+          },
+          "bmi": {
+            "type": "numeric",
+            "mechanism": "gaussian",
+            "sensitivity": 27.6,
+            "epsilon": 1.0
+          },
+          "glucose": {
+            "type": "numeric",
+            "mechanism": "gaussian",
+            "sensitivity": "142",
+            "epsilon": 1.0
+          },
+          "heart_rate": {
+            "type": "numeric",
+            "mechanism": "gaussian",
+            "sensitivity": "72",
+            "epsilon": 1.0
+          },
+          "smoking_status": {
+            "type": "categorical",
+            "mechanism": "randomized_response",
+            "domain_size": 3,
+            "epsilon": 1.0
+          },
+          "diabetes": {
+            "type": "numeric",
+            "mechanism": "gaussian",
+            "sensitivity": "1",
+            "epsilon": 1.0
+          },
+          "hypertension": {
+            "type": "numeric",
+            "mechanism": "gaussian",
+            "sensitivity": "1",
+            "epsilon": 1.0
+          },
+          "heart_disease": {
+            "type": "numeric",
+            "mechanism": "gaussian",
+            "sensitivity": "1",
+            "epsilon": 1.0
+          }
+        },
+        "rdp_steps": 10
+      },
+      "preview": [
+        {
+          "age": 95,
+          "gender": "Female",
+          "blood_pressure_systolic": 80,
+          "blood_pressure_diastolic": 50,
+          "cholesterol": 100,
+          "bmi": 15.0,
+          "glucose": 60,
+          "heart_rate": 111,
+          "smoking_status": "Current",
+          "diabetes": 1,
+          "hypertension": 0,
+          "heart_disease": 1
+        },
+        {
+          "age": 18,
+          "gender": "Female",
+          "blood_pressure_systolic": 192,
+          "blood_pressure_diastolic": 50,
+          "cholesterol": 326,
+          "bmi": 42.6,
+          "glucose": 60,
+          "heart_rate": 45,
+          "smoking_status": "Current",
+          "diabetes": 1,
+          "hypertension": 0,
+          "heart_disease": 1
+        },
+        {
+          "age": 18,
+          "gender": "Male",
+          "blood_pressure_systolic": 80,
+          "blood_pressure_diastolic": 129,
+          "cholesterol": 100,
+          "bmi": 42.6,
+          "glucose": 202,
+          "heart_rate": 45,
+          "smoking_status": "Former",
+          "diabetes": 0,
+          "hypertension": 0,
+          "heart_disease": 0
+        },
+        {
+          "age": 18,
+          "gender": "Female",
+          "blood_pressure_systolic": 80,
+          "blood_pressure_diastolic": 50,
+          "cholesterol": 100,
+          "bmi": 15.0,
+          "glucose": 60,
+          "heart_rate": 117,
+          "smoking_status": "Current",
+          "diabetes": 0,
+          "hypertension": 0,
+          "heart_disease": 0
+        },
+        {
+          "age": 95,
+          "gender": "Female",
+          "blood_pressure_systolic": 80,
+          "blood_pressure_diastolic": 50,
+          "cholesterol": 326,
+          "bmi": 37.189593229774346,
+          "glucose": 202,
+          "heart_rate": 117,
+          "smoking_status": "Never",
+          "diabetes": 1,
+          "hypertension": 1,
+          "heart_disease": 1
+        }
+      ],
+      "privacy_budget": {
+        "dataset_id": "ds_31816ef47e663ada",
+        "max_epsilon": 10.0,
+        "total_epsilon_used": 1.0,
+        "total_delta_used": 1e-05,
+        "remaining_epsilon": 9.0,
+        "utilization_pct": 10.0,
+        "warning_level": null,
+        "num_queries": 1,
+        "history": [
+          {
+            "epsilon": 1.0,
+            "delta": 1e-05,
+            "operation": "generate_statistical",
+            "cumulative_epsilon": 1.0
+          }
+        ]
+      }
+    },
+    "error": null,
+    "created_at": "2026-05-05T06:54:40.090922+00:00",
+    "completed_at": 1777964080.2892056
   }
 }
