@@ -1,5 +1,5 @@
-"""
-SynthHealthGuard — Data Ingestion & Preprocessing Service
+﻿"""
+MediSynth.AI — Data Ingestion & Preprocessing Service
 Handles CSV upload, validation, metadata detection, and preprocessing.
 """
 import pandas as pd

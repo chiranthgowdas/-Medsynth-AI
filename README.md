@@ -1,4 +1,4 @@
-# SynthHealthGuard
+﻿# MediSynth.AI
 
 **Privacy-Preserving Synthetic Healthcare Data Generation Platform**
 

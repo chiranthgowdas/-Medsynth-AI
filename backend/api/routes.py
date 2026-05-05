@@ -1,5 +1,5 @@
-"""
-SynthHealthGuard — API Routes
+﻿"""
+MediSynth.AI — API Routes
 All REST endpoints for the system.
 """
 import io
@@ -414,7 +414,7 @@ async def health_check():
     """System health check."""
     return {
         "status": "healthy",
-        "system": "SynthHealthGuard",
+        "system": "MediSynth.AI",
         "version": "1.0.0",
     }
 

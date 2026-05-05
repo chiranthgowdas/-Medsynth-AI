@@ -1,5 +1,5 @@
-"""
-SynthHealthGuard — Data Models & In-Memory Storage
+﻿"""
+MediSynth.AI — Data Models & In-Memory Storage
 JSON-file backed persistence for datasets, jobs, privacy budgets, and reports.
 """
 import json

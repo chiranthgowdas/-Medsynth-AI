@@ -1,5 +1,5 @@
-"""
-SynthHealthGuard — Federated Learning Orchestrator
+﻿"""
+MediSynth.AI — Federated Learning Orchestrator
 Implements FedAvg for multi-hospital synthetic data generation
 without sharing raw data.
 

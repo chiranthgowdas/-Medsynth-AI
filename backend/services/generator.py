@@ -1,5 +1,5 @@
-"""
-SynthHealthGuard — Synthetic Data Generator
+﻿"""
+MediSynth.AI — Synthetic Data Generator
 Supports CTGAN, TVAE, and statistical fallback with DP noise integration.
 """
 import pandas as pd

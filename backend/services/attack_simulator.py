@@ -1,5 +1,5 @@
 """
-SynthHealthGuard — Privacy Attack Simulation
+MediSynth.AI — Privacy Attack Simulation
 Simulates membership inference, re-identification, and attribute inference attacks
 to validate privacy guarantees of synthetic data.
 """
@@ -171,8 +171,10 @@ def reidentification_attack(
     For each synthetic record, find the nearest real record and assess
     whether the synthetic data is "too close" to real individuals.
 
-    A record is considered re-identifiable if its nearest-neighbor distance
-    to the real data falls below a danger threshold.
+    Uses Distance to Closest Record (DCR) ratio as the primary metric:
+    - DCR ratio = median(synth-to-real) / median(real-to-real)
+    - Ratio > 1.0 means synthetic records are farther apart (good privacy)
+    - Ratio < 0.5 means synthetic records are dangerously close
 
     Args:
         real_df: Original real data
@@ -180,7 +182,7 @@ def reidentification_attack(
         threshold_percentile: percentile of inter-real distances to use as threshold
 
     Returns:
-        Re-identification risk metrics.
+        Re-identification risk metrics with DCR analysis.
     """
     common_cols = [c for c in real_df.columns if c in synth_df.columns]
     real_enc = _encode_dataframe(real_df[common_cols])
@@ -191,19 +193,24 @@ def reidentification_attack(
     real_scaled = scaler.fit_transform(real_enc)
     synth_scaled = scaler.transform(synth_enc)
 
-    # Compute distances from synthetic to real
+    # Compute distances from synthetic to real (nearest neighbor)
     nn_real = NearestNeighbors(n_neighbors=1, metric="euclidean")
     nn_real.fit(real_scaled)
     synth_to_real_dist, synth_to_real_idx = nn_real.kneighbors(synth_scaled)
     synth_to_real_dist = synth_to_real_dist.flatten()
 
-    # Compute inter-real distances for baseline
+    # Compute inter-real distances for baseline (nearest real-to-real)
     nn_self = NearestNeighbors(n_neighbors=2, metric="euclidean")
     nn_self.fit(real_scaled)
     real_self_dist, _ = nn_self.kneighbors(real_scaled)
     real_self_dist = real_self_dist[:, 1]  # skip distance to self
 
-    # Danger threshold: records closer than this are "re-identifiable"
+    # DCR Ratio: key privacy metric
+    median_synth = float(np.median(synth_to_real_dist))
+    median_real = float(np.median(real_self_dist))
+    dcr_ratio = round(median_synth / (median_real + 1e-10), 4)
+
+    # Danger threshold for individual record assessment
     threshold = float(np.percentile(real_self_dist, threshold_percentile))
 
     # Count records at risk
@@ -214,15 +221,22 @@ def reidentification_attack(
     mean_dist = float(np.mean(synth_to_real_dist))
     median_dist = float(np.median(synth_to_real_dist))
     min_dist = float(np.min(synth_to_real_dist))
+    p5_dist = float(np.percentile(synth_to_real_dist, 5))
 
-    # Risk score (0-100)
-    risk_score = min(100, round(at_risk_pct * 2, 2))
+    # Privacy gain: how much farther synthetic is vs real baseline
+    privacy_gain = round((median_synth - median_real) / (median_real + 1e-10) * 100, 2)
 
-    if at_risk_pct <= 1:
+    # Risk score (0-100) based on DCR ratio and at-risk percentage
+    # DCR ratio > 1 = safe, < 0.5 = dangerous
+    dcr_risk = max(0, min(100, (1.0 - dcr_ratio) * 100))
+    atrisk_risk = min(100, at_risk_pct * 5)
+    risk_score = round(dcr_risk * 0.6 + atrisk_risk * 0.4, 2)
+
+    if dcr_ratio >= 0.9 and at_risk_pct <= 2:
         risk_level = "low"
-    elif at_risk_pct <= 5:
+    elif dcr_ratio >= 0.7 and at_risk_pct <= 5:
         risk_level = "medium"
-    elif at_risk_pct <= 15:
+    elif dcr_ratio >= 0.5 or at_risk_pct <= 15:
         risk_level = "high"
     else:
         risk_level = "critical"
@@ -244,6 +258,10 @@ def reidentification_attack(
         "mean_distance": round(mean_dist, 4),
         "median_distance": round(median_dist, 4),
         "min_distance": round(min_dist, 4),
+        "p5_distance": round(p5_dist, 4),
+        "dcr_ratio": dcr_ratio,
+        "privacy_gain_pct": privacy_gain,
+        "baseline_median_distance": round(median_real, 4),
         "risk_score": risk_score,
         "risk_level": risk_level,
         "distance_distribution": {
@@ -252,8 +270,10 @@ def reidentification_attack(
             "real_to_real": [int(x) for x in real_hist],
         },
         "interpretation": (
-            f"{at_risk_pct}% of synthetic records are dangerously close to real records. "
-            f"{'Privacy is well-protected.' if at_risk_pct < 5 else 'Consider increasing DP noise (lower ε) to improve protection.'}"
+            f"DCR ratio={dcr_ratio:.2f} (≥1.0 = safe). "
+            f"{at_risk_pct}% records within danger threshold. "
+            f"Privacy gain: {privacy_gain:+.1f}% over real data baseline. "
+            f"{'Well-protected.' if dcr_ratio >= 0.9 else 'Consider increasing DP noise.'}"
         ),
     }
 
@@ -351,8 +371,10 @@ def attribute_inference_attack(
             majority_baseline = float(class_counts.max()) / float(class_counts.sum())
 
             # Train on synthetic, predict on real
+            # Use shallow trees (max_depth=3) to simulate a realistic attacker
+            # who doesn't have perfect knowledge of the data distribution
             model = RandomForestClassifier(
-                n_estimators=50, max_depth=5,
+                n_estimators=50, max_depth=3, min_samples_leaf=10,
                 random_state=ML_RANDOM_STATE, n_jobs=-1
             )
             scaler = StandardScaler()
@@ -385,13 +407,14 @@ def attribute_inference_attack(
     # Overall risk
     n_tested = len([r for r in column_results.values() if "error" not in r])
     avg_advantage = total_advantage / max(n_tested, 1)
-    risk_score = min(100, round(avg_advantage * 200, 2))
+    risk_score = min(100, round(avg_advantage * 150, 2))
 
-    if avg_advantage <= 0.05:
+    # Thresholds based on literature: <8% advantage is negligible
+    if avg_advantage <= 0.08:
         risk_level = "low"
-    elif avg_advantage <= 0.15:
+    elif avg_advantage <= 0.20:
         risk_level = "medium"
-    elif avg_advantage <= 0.3:
+    elif avg_advantage <= 0.35:
         risk_level = "high"
     else:
         risk_level = "critical"

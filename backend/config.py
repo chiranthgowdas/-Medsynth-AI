@@ -1,5 +1,5 @@
-"""
-SynthHealthGuard — Global Configuration
+﻿"""
+MediSynth.AI — Global Configuration
 """
 import os
 from pathlib import Path

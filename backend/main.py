@@ -1,5 +1,5 @@
-"""
-SynthHealthGuard — FastAPI Application Entry Point
+﻿"""
+MediSynth.AI — FastAPI Application Entry Point
 Privacy-Preserving Synthetic Healthcare Data Generation Platform
 """
 from contextlib import asynccontextmanager
@@ -17,13 +17,13 @@ from backend.utils.logging_config import setup_logging
 async def lifespan(app: FastAPI):
     """Application lifespan: startup and shutdown events."""
     logger = setup_logging()
-    logger.info("SynthHealthGuard starting up...")
+    logger.info("MediSynth.AI starting up...")
     yield
-    logger.info("SynthHealthGuard shutting down...")
+    logger.info("MediSynth.AI shutting down...")
 
 
 app = FastAPI(
-    title="SynthHealthGuard",
+    title="MediSynth.AI",
     description=(
         "Privacy-Preserving Synthetic Healthcare Data Generation Platform. "
         "Generate HIPAA/GDPR-compliant synthetic data with differential privacy "
@@ -57,7 +57,7 @@ async def serve_frontend():
     if index_path.exists():
         return FileResponse(str(index_path))
     return {
-        "message": "SynthHealthGuard API",
+        "message": "MediSynth.AI API",
         "docs": "/docs",
         "version": "1.0.0",
     }

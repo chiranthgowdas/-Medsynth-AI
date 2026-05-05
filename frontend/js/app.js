@@ -1,5 +1,5 @@
-/**
- * SynthHealthGuard — Main Application
+﻿/**
+ * MediSynth.AI — Main Application
  */
 const state = { datasetId: null, jobId: null, federationId: null, loading: false };
 

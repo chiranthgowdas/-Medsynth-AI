@@ -1,5 +1,5 @@
-"""
-SynthHealthGuard — Security Utilities
+﻿"""
+MediSynth.AI — Security Utilities
 Encryption, hashing, and data protection for HIPAA/GDPR compliance.
 """
 import hashlib

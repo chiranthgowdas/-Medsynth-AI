@@ -1,5 +1,5 @@
-"""
-SynthHealthGuard — One-Command Startup
+﻿"""
+MediSynth.AI — One-Command Startup
 """
 import subprocess
 import sys
@@ -12,7 +12,7 @@ def main():
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
     print("\n" + "=" * 60)
-    print("  SynthHealthGuard -- Starting Up")
+    print("  MediSynth.AI -- Starting Up")
     print("  Privacy-Preserving Synthetic Healthcare Data Platform")
     print("=" * 60 + "\n")
 

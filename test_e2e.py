@@ -1,4 +1,4 @@
-"""End-to-end test for SynthHealthGuard — all features."""
+﻿"""End-to-end test for MediSynth.AI — all features."""
 import requests
 import json
 import sys
@@ -20,7 +20,7 @@ def test(name, fn):
         print(f"  [FAIL] {name}: {e}")
         return None
 
-print("\n=== SynthHealthGuard E2E Test ===\n")
+print("\n=== MediSynth.AI E2E Test ===\n")
 
 # 1. Health
 test("Health check", lambda: (

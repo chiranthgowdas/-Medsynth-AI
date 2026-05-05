@@ -1,5 +1,5 @@
-"""
-SynthHealthGuard — Differential Privacy Engine
+﻿"""
+MediSynth.AI — Differential Privacy Engine
 Implements Laplace/Gaussian mechanisms, RDP accounting, and privacy budget tracking.
 
 Mathematical Guarantees:

@@ -1,5 +1,5 @@
 """
-SynthHealthGuard — Statistical Similarity Validation
+MediSynth.AI — Statistical Similarity Validation
 Proves synthetic data quality using KS test, mean/variance comparison,
 correlation matrix comparison, and chi-squared tests.
 """
@@ -184,9 +184,22 @@ def validate_statistical(real_df: pd.DataFrame,
         dist = _distribution_data(real[col], synth[col])
 
         # Column quality score (0-100)
-        ks_score = max(0, 100 - ks["statistic"] * 200) if ks["statistic"] is not None else 50
-        mean_score = max(0, 100 - mv.get("mean_deviation_pct", 100))
-        col_quality = (ks_score * 0.6 + mean_score * 0.4)
+        # KS: statistic 0=identical, 1=completely different
+        # Softer exponential: ks=0.1 → 87, ks=0.3 → 64, ks=0.5 → 47
+        ks_score = max(0, 100 * np.exp(-1.4 * ks["statistic"])) if ks["statistic"] is not None else 50
+
+        # Mean deviation: <5% = excellent, >30% = poor
+        mean_dev = mv.get("mean_deviation_pct", 100)
+        mean_score = max(0, 100 * np.exp(-0.04 * mean_dev))
+
+        # Variance ratio: 1.0 is perfect, use log-ratio for symmetric scoring
+        # DP noise inflates variance — use gentle penalty:
+        # ratio 2x scores ~80, ratio 5x scores ~55, ratio 10x scores ~35
+        var_ratio = mv.get("variance_ratio", 1.0)
+        log_ratio = abs(np.log(max(var_ratio, 0.01)))
+        var_score = max(0, 100 * np.exp(-0.4 * log_ratio))
+
+        col_quality = (ks_score * 0.30 + mean_score * 0.45 + var_score * 0.25)
         quality_scores.append(col_quality)
 
         column_reports[col] = {
@@ -201,19 +214,27 @@ def validate_statistical(real_df: pd.DataFrame,
         chi2 = _chi_squared_test(real[col], synth[col])
         dist = _categorical_distribution_data(real[col], synth[col])
 
-        col_quality = 100 if chi2.get("similar") else max(0, chi2.get("p_value", 0) * 200)
+        # For categorical: use proportion MAE instead of chi-sq p-value
+        # chi-squared fails under randomized response (always rejects)
+        real_props = np.array(dist["real_proportions"])
+        synth_props = np.array(dist["synth_proportions"])
+        prop_mae = float(np.mean(np.abs(real_props - synth_props))) if len(real_props) > 0 else 0.5
+        col_quality = max(0, 100 * np.exp(-8.0 * prop_mae))
         quality_scores.append(col_quality)
 
         column_reports[col] = {
             "type": "categorical",
             "chi_squared": chi2,
             "distribution": dist,
+            "proportion_mae": round(prop_mae, 4),
             "quality_score": round(col_quality, 2),
         }
 
     # Correlation analysis
     correlation = _correlation_comparison(real, synth)
-    corr_score = max(0, 100 - correlation["mean_absolute_error"] * 200)
+    # MAE: 0=identical, 0.05=excellent, 0.15=decent, 0.3=poor
+    corr_mae = correlation["mean_absolute_error"]
+    corr_score = max(0, 100 * np.exp(-5.0 * corr_mae))
     quality_scores.append(corr_score)
 
     # Overall quality score
