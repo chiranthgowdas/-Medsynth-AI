@@ -1,84 +1,158 @@
-﻿# MediSynth.AI
+﻿# MediSynth AI – Privacy-Preserving Healthcare Data Generator
 
-**Privacy-Preserving Synthetic Healthcare Data Generation Platform**
+## Introduction
 
-A production-ready system for generating high-quality synthetic healthcare data with formal differential privacy guarantees, multi-hospital federated learning, and comprehensive privacy attack resistance.
+Healthcare data is highly sensitive and strictly regulated under laws such as HIPAA and GDPR. These restrictions limit data sharing and slow down AI-driven innovation in healthcare.
 
-## Quick Start
+MediSynth AI addresses this problem by generating synthetic healthcare data while ensuring strong privacy guarantees. The system combines synthetic data generation, differential privacy, machine learning validation, and federated learning to enable safe and scalable data usage.
 
-```bash
-cd synth-health-guard
-python run.py
-```
+The goal of this project is to balance privacy and utility, ensuring that data remains secure while still being useful for machine learning applications.
 
-Then open http://127.0.0.1:8000 in your browser.
 
 ## Features
 
-| Feature | Description |
-|:---|:---|
-| **Synthetic Data Generation** | CTGAN, TVAE, or Statistical (Gaussian copula) generators |
-| **Differential Privacy** | Gaussian/Laplace mechanisms with RDP accounting |
-| **Privacy Budget Tracking** | Per-dataset epsilon tracking with exhaustion warnings |
-| **Statistical Validation** | KS test, mean/variance, chi-squared, correlation matrix comparison |
-| **ML Utility Validation** | TSTR benchmark with RandomForest + GradientBoosting |
-| **Privacy Attack Simulation** | Membership inference, re-identification, attribute inference |
-| **Federated Learning** | FedAvg with order-independent aggregation, DP on updates |
-| **Dashboard** | Glassmorphism UI with charts, gauges, heatmaps |
+* Synthetic data generation using CTGAN
+* Differential privacy with budget tracking
+* Statistical similarity validation (KS test, correlation analysis)
+* Machine learning utility validation
+* Privacy attack resistance (membership, attribute, re-identification)
+* Federated learning simulation across multiple hospitals
+* Download option for generated datasets
 
-## Architecture
+---
 
-```
-Frontend (HTML/CSS/JS + Chart.js)
-        |
-    FastAPI Backend
-        |
-   +----+----+----+----+----+
-   |    |    |    |    |    |
-  Gen  DP   Stat  ML  Atk  FL
-```
+## Methodologies Used
 
-## API Endpoints
+### Synthetic Data Generation (CTGAN)
 
-| Method | Endpoint | Description |
-|:---|:---|:---|
-| GET | `/api/health` | Health check |
-| GET | `/api/data/sample` | Load sample healthcare data |
-| POST | `/api/data/upload` | Upload CSV |
-| POST | `/api/generate` | Generate synthetic data |
-| GET | `/api/privacy/budget/{id}` | Privacy budget status |
-| POST | `/api/validate/statistical` | Statistical validation |
-| POST | `/api/validate/ml` | ML utility validation |
-| POST | `/api/attacks/simulate` | Privacy attack simulation |
-| POST | `/api/federated/create` | Create federation |
-| POST | `/api/federated/add-hospital` | Add hospital |
-| POST | `/api/federated/train` | Run federated training |
-| POST | `/api/federated/generate` | Generate from federation |
+The system uses Conditional Tabular GAN (CTGAN) to learn the distribution of real healthcare data and generate realistic synthetic datasets. It supports both numerical and categorical features.
 
-Full interactive docs at http://127.0.0.1:8000/docs
+---
 
-## Differential Privacy Guarantees
+### Differential Privacy
 
-- **Gaussian Mechanism**: Adds N(0, sigma^2) noise where sigma = sensitivity * sqrt(2*ln(1.25/delta)) / epsilon
-- **Laplace Mechanism**: Adds Lap(sensitivity/epsilon) noise
-- **RDP Accounting**: Renyi DP for tight composition across queries
-- **Per-column parallel composition**: Each column gets full epsilon budget
-- **Privacy Budget**: Cumulative tracking with warnings at 50%, 75%, 90%
+Differential privacy is applied to ensure that individual data points cannot be identified.
 
-## Privacy Attack Resistance
+* Laplace and Gaussian mechanisms are supported
+* Privacy parameters include epsilon (ε) and delta (δ)
+* Privacy budget is tracked to prevent excessive data exposure
 
-- **Membership Inference**: AUC near 0.5 = attacker cannot distinguish members
-- **Re-identification**: Distance-based assessment of synthetic-to-real proximity
-- **Attribute Inference**: Prediction advantage over random baseline
+---
 
-## Federated Learning
+### Statistical Similarity Validation
 
-- **FedAvg**: Weighted parameter averaging (order-independent: A+B == B+A)
-- **No raw data sharing**: Only model statistics are exchanged
-- **DP on updates**: Optional Gaussian noise on parameter updates
+This module evaluates how closely synthetic data matches real data.
 
-## Requirements
+* KS Test for distribution comparison
+* Correlation Mean Absolute Error (MAE)
+* Mean and variance comparison
 
-- Python 3.10+
-- FastAPI, uvicorn, pandas, numpy, scipy, scikit-learn
-- Optional: sdv (for CTGAN/TVAE)
+---
+
+### Machine Learning Utility Validation
+
+The system uses a Train on Synthetic, Test on Real (TSTR) approach.
+
+* Models are trained on synthetic data
+* Evaluated on real data
+* Metrics include accuracy, F1 score, and ROC-AUC
+
+This ensures the synthetic data is useful for real-world applications.
+
+---
+
+### Privacy Attack Resistance
+
+The system evaluates privacy risks using:
+
+* Membership Inference Attack
+* Attribute Inference Attack
+* Re-identification Risk
+
+These checks ensure that synthetic data does not leak sensitive information.
+
+---
+
+### Federated Learning
+
+The system simulates multiple hospitals collaborating without sharing raw data.
+
+* Each participant trains locally
+* Only model updates are shared
+* Aggregation is done using the FedAvg algorithm
+* Differential privacy can also be applied to model updates
+
+---
+
+## System Architecture
+
+Real Data
+→ CTGAN + Differential Privacy
+→ Synthetic Data
+→ Validation (Statistical + ML Utility)
+→ Federated Learning Integration
+
+---
+
+## Tech Stack
+
+* Backend: Flask
+* Frontend: HTML, CSS, JavaScript
+* Machine Learning: scikit-learn
+* Synthetic Data: SDV (CTGAN)
+* Deployment: (Render / Railway)
+
+---
+
+## Results
+
+* Balanced privacy and utility trade-off
+* Improved machine learning utility after tuning
+* Synthetic data usable for downstream tasks
+* Strong resistance to privacy attacks
+
+---
+
+## Output Screenshots
+
+Its in the Output Images Folder
+
+## How to Run Locally
+
+git clone https://github.com/chiranthgowdas/-Medsynth-AI
+cd your-repo
+pip install -r requirements.txt
+python app.py
+
+---
+
+## Key Insights
+
+* Perfect statistical similarity does not guarantee privacy
+* Strong privacy reduces utility
+* A balanced approach is required for real-world applications
+
+---
+
+## Future Improvements
+
+* Improve CTGAN training stability
+* Support larger datasets
+* Enhance federated learning capabilities
+* Improve visualization and analytics
+
+---
+
+## Team
+
+Sentinels
+
+Jeevan M
+Chiranth Gowda S
+Harshith K
+
+## Conclusion
+
+MediSynth AI demonstrates how synthetic data generation, differential privacy, and federated learning can be combined to enable secure and scalable AI in healthcare.
+
+The system focuses on maintaining a balance between privacy protection and practical usability.
