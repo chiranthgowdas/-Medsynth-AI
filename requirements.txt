@@ -1,4 +1,4 @@
-﻿# MediSynth.AI - Dependencies
+# MediSynth.AI - Dependencies (Render-compatible)
 # Core
 fastapi==0.115.0
 uvicorn[standard]==0.30.0
@@ -11,10 +11,6 @@ pandas==2.2.0
 numpy==1.26.4
 scipy==1.13.0
 scikit-learn==1.5.0
-torch>=2.0.0
-
-# Synthetic Data Generation
-sdv==1.17.0
 
 # Utilities
 python-dateutil==2.9.0

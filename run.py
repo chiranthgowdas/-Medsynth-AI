@@ -1,4 +1,4 @@
-﻿"""
+"""
 MediSynth.AI — One-Command Startup
 """
 import subprocess
@@ -39,12 +39,16 @@ def main():
         _generate_sample(sample_path)
         print(f"    Created {sample_path}")
 
-    print(f"\n[*] Starting server at http://127.0.0.1:8000")
-    print(f"[*] API docs at http://127.0.0.1:8000/docs")
-    print(f"[*] Dashboard at http://127.0.0.1:8000\n")
+    port = int(os.environ.get("PORT", 8000))
+    host = "0.0.0.0" if os.environ.get("RENDER") else "127.0.0.1"
+    is_dev = not os.environ.get("RENDER")
+
+    print(f"\n[*] Starting server at http://{host}:{port}")
+    print(f"[*] API docs at http://{host}:{port}/docs")
+    print(f"[*] Dashboard at http://{host}:{port}\n")
 
     import uvicorn
-    uvicorn.run("backend.main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("backend.main:app", host=host, port=port, reload=is_dev)
 
 
 def _generate_sample(path):
