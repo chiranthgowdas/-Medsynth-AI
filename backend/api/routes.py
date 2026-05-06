@@ -1,4 +1,4 @@
-﻿"""
+"""
 MediSynth.AI — API Routes
 All REST endpoints for the system.
 """
@@ -7,7 +7,7 @@ import json
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from fastapi import APIRouter, UploadFile, File, HTTPException, Form
+from fastapi import APIRouter, UploadFile, File, HTTPException, Form, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse
 from typing import Any, Optional
 
@@ -149,29 +149,70 @@ import numpy as np  # noqa: E402
 # Generation Endpoints
 # ──────────────────────────────────────────────
 @router.post("/generate")
-async def generate(req: GenerateRequest):
-    """Generate synthetic data from a dataset."""
+async def generate(req: GenerateRequest, background_tasks: BackgroundTasks):
+    """Generate synthetic data from a dataset (async — runs in background)."""
     info = data_service.get_dataset_info(req.dataset_id)
     if not info:
         raise HTTPException(404, f"Dataset {req.dataset_id} not found")
 
-    try:
-        result = generate_synthetic_data(
-            dataset_id=req.dataset_id,
-            num_rows=req.num_rows,
-            model_type=req.model_type,
-            epochs=req.epochs,
-            batch_size=req.batch_size,
-            epsilon=req.epsilon,
-            delta=req.delta,
-            dp_mechanism=req.dp_mechanism,
-            apply_dp=req.apply_dp,
-        )
-        return sanitize({"status": "success", "data": result})
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    except Exception as e:
-        raise HTTPException(500, f"Generation failed: {str(e)}")
+    # Create a job_id upfront so client can poll for status
+    from backend.utils.security import generate_job_id as _gen_id
+    from backend.models.database import create_job as _create_job
+    job_id = _gen_id()
+    _create_job(job_id, req.dataset_id, "generation", {
+        "num_rows": req.num_rows, "model_type": req.model_type,
+        "epochs": req.epochs, "epsilon": req.epsilon, "delta": req.delta,
+    })
+
+    def _run_generation():
+        try:
+            result = generate_synthetic_data(
+                dataset_id=req.dataset_id,
+                num_rows=req.num_rows,
+                model_type=req.model_type,
+                epochs=req.epochs,
+                batch_size=req.batch_size,
+                epsilon=req.epsilon,
+                delta=req.delta,
+                dp_mechanism=req.dp_mechanism,
+                apply_dp=req.apply_dp,
+                _job_id=job_id,
+            )
+        except Exception as e:
+            from backend.models.database import update_job as _update_job
+            _update_job(job_id, status="failed", error=str(e))
+
+    background_tasks.add_task(_run_generation)
+
+    return sanitize({
+        "status": "success",
+        "data": {
+            "job_id": job_id,
+            "message": "Generation started in background",
+            "poll_url": f"/api/generate/status/{job_id}",
+        },
+    })
+
+
+@router.get("/generate/status/{job_id}")
+async def generation_status(job_id: str):
+    """Poll generation job status."""
+    job = jobs_store.get(job_id)
+    if not job:
+        raise HTTPException(404, f"Job {job_id} not found")
+
+    response = {
+        "job_id": job_id,
+        "status": job.get("status", "pending"),
+        "progress": job.get("progress", 0),
+    }
+
+    if job.get("status") == "completed" and job.get("result"):
+        response["result"] = job["result"]
+    elif job.get("status") == "failed":
+        response["error"] = job.get("error", "Unknown error")
+
+    return sanitize({"status": "success", "data": response})
 
 
 @router.get("/generate/download/{job_id}")

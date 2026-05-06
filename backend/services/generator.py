@@ -171,6 +171,7 @@ def generate_synthetic_data(
     delta: float = 1e-5,
     dp_mechanism: str = "gaussian",
     apply_dp: bool = True,
+    _job_id: Optional[str] = None,
 ) -> Dict:
     """
     Full synthetic data generation pipeline:
@@ -182,11 +183,12 @@ def generate_synthetic_data(
 
     Returns generation result with metadata.
     """
-    job_id = generate_job_id()
-    create_job(job_id, dataset_id, "generation", {
-        "num_rows": num_rows, "model_type": model_type,
-        "epochs": epochs, "epsilon": epsilon, "delta": delta,
-    })
+    job_id = _job_id or generate_job_id()
+    if not _job_id:
+        create_job(job_id, dataset_id, "generation", {
+            "num_rows": num_rows, "model_type": model_type,
+            "epochs": epochs, "epsilon": epsilon, "delta": delta,
+        })
 
     try:
         # Step 1: Load data

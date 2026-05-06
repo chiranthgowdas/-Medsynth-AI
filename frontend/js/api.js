@@ -1,4 +1,4 @@
-﻿/**
+/**
  * MediSynth.AI — API Client
  */
 const API_BASE = '/api';
@@ -32,10 +32,55 @@ const api = {
   async listDatasets() { return this._fetch('/data/list'); },
   async getDatasetInfo(id) { return this._fetch(`/data/info/${id}`); },
 
-  // Generation
+  // Generation (async with polling)
   async generate(params) {
-    return this._fetch('/generate', { method: 'POST', body: JSON.stringify(params) });
+    // Start generation — returns immediately with job_id
+    const startRes = await this._fetch('/generate', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+
+    const jobId = startRes.data.job_id;
+    if (!jobId) throw new Error('No job ID returned');
+
+    // Poll for completion
+    return this._pollJob(jobId);
   },
+
+  async _pollJob(jobId, maxWaitMs = 600000) {
+    const startTime = Date.now();
+    const pollInterval = 2000; // 2 seconds
+
+    while (Date.now() - startTime < maxWaitMs) {
+      await new Promise(r => setTimeout(r, pollInterval));
+
+      try {
+        const res = await this._fetch(`/generate/status/${jobId}`);
+        const job = res.data;
+
+        // Update progress indicator if available
+        if (window._onGenerationProgress) {
+          window._onGenerationProgress(job.progress || 0, job.status);
+        }
+
+        if (job.status === 'completed' && job.result) {
+          return { status: 'success', data: job.result };
+        } else if (job.status === 'failed') {
+          throw new Error(job.error || 'Generation failed');
+        }
+        // else still running, continue polling
+      } catch (e) {
+        if (e.message.includes('Generation failed') || e.message.includes('failed')) {
+          throw e;
+        }
+        // Network error, retry
+        console.warn('Poll error, retrying...', e);
+      }
+    }
+
+    throw new Error('Generation timed out after 10 minutes');
+  },
+
   async listJobs() { return this._fetch('/generate/jobs'); },
   downloadUrl(jobId) { return `${API_BASE}/generate/download/${jobId}`; },
 
