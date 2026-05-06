@@ -1,4 +1,4 @@
-﻿"""
+"""
 MediSynth.AI — Synthetic Data Generator
 Supports CTGAN, TVAE, and statistical fallback with DP noise integration.
 """
@@ -221,9 +221,15 @@ def generate_synthetic_data(
         if model_type in ["ctgan", "tvae"]:
             sdv_model = _train_sdv_model(working_df, model_type, epochs, batch_size)
 
+        actual_model_type = model_type
         if sdv_model is None:
             # Fallback to statistical generator
-            model_type = "statistical"
+            if model_type in ["ctgan", "tvae"]:
+                logger.warning(
+                    f"Requested {model_type.upper()} but SDV/torch not available. "
+                    f"Falling back to statistical generator."
+                )
+            actual_model_type = "statistical"
             stat_model = StatisticalGenerator()
             stat_model.fit(working_df)
 
@@ -252,7 +258,7 @@ def generate_synthetic_data(
             synthetic_df, dp_metadata = dp_processor.apply_dp(synthetic_df, working_df)
 
         # Step 6: Save synthetic data
-        output_filename = f"{dataset_id}_{model_type}_{job_id}.csv"
+        output_filename = f"{dataset_id}_{actual_model_type}_{job_id}.csv"
         output_path = GENERATED_DIR / output_filename
         synthetic_df.to_csv(output_path, index=False)
 
@@ -271,7 +277,8 @@ def generate_synthetic_data(
         result = {
             "job_id": job_id,
             "dataset_id": dataset_id,
-            "model_type": model_type,
+            "model_type": actual_model_type,
+            "requested_model_type": model_type,
             "num_rows_generated": len(synthetic_df),
             "num_columns": len(synthetic_df.columns),
             "columns": list(synthetic_df.columns),
@@ -291,7 +298,7 @@ def generate_synthetic_data(
         audit_log(logger, "data_generated", {
             "job_id": job_id,
             "dataset_id": dataset_id,
-            "model": model_type,
+            "model": actual_model_type,
             "rows": num_rows,
             "epsilon": epsilon,
         })
