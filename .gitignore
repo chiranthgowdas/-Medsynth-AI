@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Storage (generated at runtime)
+storage/
+!storage/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Diagnostic scripts
+check_scores.py
+
+# Output images (screenshots)
+outputimages/
